@@ -7,7 +7,7 @@ Real-time 3D bumper-car wager arena on **Monad testnet** (chain id 10143). Every
 > Testnet demo. Free test tokens, no real funds. Not affiliated with, endorsed by, or connected with any company or ticker shown.
 
 - Live demo: https://bump-monad.vercel.app
-- Demo video: https://youtu.be/yZVpdFUB4Tw
+- Demo video: https://youtu.be/tjQsDo-kLpA
 - Game server: https://server-production-54bd.up.railway.app (`/health`, `/ready`, `/metrics.json`)
 
 Built for the Monad Metropolis Hackathon.
