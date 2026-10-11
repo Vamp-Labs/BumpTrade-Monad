@@ -1,6 +1,8 @@
 # BUMP.TRADE
 
-Real-time 3D multiplayer bumper-car arena on **Monad testnet** (chain id 10143). Bump other cars out of the arena, last car standing wins the pot. Stakes are a free test token (`BUMP`) and play is gasless: a player signs one EIP-712 message, the game server relayer pays all gas, and the whole match settles on Monad in **one transaction**.
+**HIT THEIR CAR. TAKE THEIR CASH. TRY NOT TO GET LIQUIDATED.**
+
+Real-time 3D bumper-car wager arena on **Monad testnet** (chain id 10143). Every player stakes 100 free `BUMP` and starts with a balance. Every hit moves balance from the car you hit to you (harder, faster, better-angled hits take more); drop to zero and you are liquidated and out. When the round ends, each player is paid `stake x final balance / start balance` from the pot, on-chain, in **one transaction**. Play is gasless: a player signs one EIP-712 message and the game server relayer pays all gas.
 
 > Testnet demo. Free test tokens, no real funds. Not affiliated with, endorsed by, or connected with any company or ticker shown.
 
