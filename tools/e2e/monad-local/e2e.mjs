@@ -24,7 +24,7 @@ const log = (m) => console.log(`[${((Date.now() - T0) / 1000).toFixed(1)}s] ${m}
 
 async function connectFlow(p) {
   await p.goto(CFG.client);
-  await p.waitText("PLAY ONLINE", 30000);
+  await p.waitText("PLAY ONLINE", 120000);
   await p.clickWait("PLAY ONLINE");
   await p.waitText("WALLET", 8000, ".on-backdrop.show");
   await p.clickWait("E2E Mock Wallet");

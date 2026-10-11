@@ -14,7 +14,20 @@ Real-time 3D multiplayer bumper-car arena on **Monad testnet** (chain id 10143).
 
 ## Deployment
 
-Monad testnet, chain id 10143, native token MON, explorer https://testnet.monadvision.com. Contract addresses are recorded in `contracts/deployments/10143.json` after `contracts/script/Deploy.s.sol` is broadcast.
+Monad testnet, chain id 10143, native token MON, explorer https://testnet.monadvision.com.
+
+| Item | Address / URL |
+|---|---|
+| `BumpArena` | `0xCB574c46A3579Cf56F398F42A51BFE4C0f1459d9` |
+| `MockBUMP` (free test token) | `0xF094E7e6cB7B9297a88F19E5209C0D6DE3616666` |
+| Live client | https://bump-monad.vercel.app |
+| Game server | https://server-production-54bd.up.railway.app (`/health`, `/ready`, `/metrics.json`) |
+
+Full record: `contracts/deployments/10143.json`. The client is static (Vercel); the Colyseus game server and relayer run on Railway (Singapore edge). Players never pay gas: the relayer wallet pays all fees.
+
+## Verified end to end
+
+`tools/e2e/monad-local` runs two real browsers with mock EIP-1193 wallets against the live client, the live server and Monad testnet: connect, free BUMP faucet (on-chain mint), one-signature gasless join (player MON balance unchanged), stake escrowed in the arena, authoritative match, on-chain settle (one transaction, about 130k gas) with payouts, empty vault, leaderboard. Run it with `E2E_CLIENT=<url> E2E_SERVER=<url> node tools/e2e/monad-local/e2e.mjs` and a headless Chrome on port 9444.
 
 ## Repository layout
 
