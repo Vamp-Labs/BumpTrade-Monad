@@ -20,16 +20,13 @@ export interface SettlementRecord {
 export interface Leaderboard {
   recordSettled(rec: SettlementRecord): Promise<void>;
   recordCancelled(matchId: Hex32): Promise<void>;
-  faucetNextClaimAt(wallet: string): Promise<number>;
-  faucetMarkClaimed(wallet: string, at: number): Promise<void>;
   handleRequest(req: Request): Promise<Response | null>;
   ready(): Promise<boolean>;
 }
 
-const WALLET = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+const WALLET = /^0x[0-9a-fA-F]{40}$/;
 const MATCH_ID = /^0x[0-9a-fA-F]{64}$/;
 const WEEK_SECONDS = 7 * 24 * 60 * 60;
-const FAUCET_COOLDOWN_S = 24 * 60 * 60;
 
 const clampLimit = (raw: string | null, fallback: number): number => {
   const parsed = Number(raw);
@@ -163,7 +160,7 @@ export const createLeaderboard = async (o: {
        JOIN ${t("matches")} m ON m.id = p.match_id
        WHERE p.wallet = $1
        ORDER BY m.opened_at DESC, m.id ASC LIMIT $2`,
-      [wallet, limit],
+      [wallet.toLowerCase(), limit],
     );
     return {
       rows: rows.map((row) => ({
@@ -214,7 +211,7 @@ export const createLeaderboard = async (o: {
         return reply(req, 400, { error: "invalid wallet" });
       const row = (
         await db.query(`SELECT * FROM ${t("player_stats")} WHERE wallet = $1`, [
-          wallet,
+          wallet.toLowerCase(),
         ])
       )[0];
       return reply(req, 200, {
@@ -330,25 +327,6 @@ export const createLeaderboard = async (o: {
          ON CONFLICT (id) DO UPDATE SET status = 'cancelled'
          WHERE ${t("matches")}.status <> 'settled'`,
         [matchId.toLowerCase(), Math.floor(Date.now() / 1000)],
-      );
-    },
-
-    async faucetNextClaimAt(wallet) {
-      const row = (
-        await db.query(
-          `SELECT claimed_at FROM ${t("faucet_claims")} WHERE wallet = $1`,
-          [wallet],
-        )
-      )[0];
-      if (!row) return 0;
-      return Number(row.claimed_at) + FAUCET_COOLDOWN_S;
-    },
-
-    async faucetMarkClaimed(wallet, at) {
-      await db.query(
-        `INSERT INTO ${t("faucet_claims")} (wallet, claimed_at) VALUES ($1, $2)
-         ON CONFLICT (wallet) DO UPDATE SET claimed_at = EXCLUDED.claimed_at`,
-        [wallet, at],
       );
     },
 

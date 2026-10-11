@@ -4,11 +4,7 @@ import {
   InputFrame,
   JOIN_INTENT_MESSAGE,
   MatchState,
-  SOL_JOIN_PREPARE_MESSAGE,
-  SOL_JOIN_SUBMIT_MESSAGE,
   type ClaimSeatMessage,
-  type SolJoinPrepareMessage,
-  type SolJoinSubmitMessage,
 } from '@bump/shared';
 import type { Hex } from 'viem';
 import type { SignedJoin } from '../chain/evm/intent';
@@ -164,7 +160,6 @@ export class NetClient {
       sessionKey: sessionKey.publicId,
       issuedAt,
       signature,
-      ...(sessionKey.scheme === 'ed25519' ? { scheme: 'ed25519' as const } : {}),
     };
     room.send(CLAIM_SEAT_MESSAGE, payload);
   }
@@ -173,18 +168,6 @@ export class NetClient {
     const room = this.room;
     if (!room) throw new Error('Not connected to a room');
     room.send(JOIN_INTENT_MESSAGE, signed);
-  }
-
-  public sendSolJoinPrepare(message: SolJoinPrepareMessage): void {
-    const room = this.room;
-    if (!room) throw new Error('Not connected to a room');
-    room.send(SOL_JOIN_PREPARE_MESSAGE, message);
-  }
-
-  public sendSolJoinSubmit(message: SolJoinSubmitMessage): void {
-    const room = this.room;
-    if (!room) throw new Error('Not connected to a room');
-    room.send(SOL_JOIN_SUBMIT_MESSAGE, message);
   }
 
   public estimateTick(): number {

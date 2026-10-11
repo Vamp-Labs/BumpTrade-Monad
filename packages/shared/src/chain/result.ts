@@ -1,6 +1,6 @@
 import type { Address, Hex } from "viem";
 
-export const CHAIN_ID = 46630;
+export const CHAIN_ID = 10143;
 
 export const RESULT_TYPES = {
   Result: [

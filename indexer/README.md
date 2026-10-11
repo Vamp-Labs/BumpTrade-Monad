@@ -1,6 +1,6 @@
 # @bump/indexer
 
-Ponder 0.18 indexer for `BumpArena` on Robinhood Chain testnet (46630). It serves the C7 leaderboard and match-history API.
+Ponder 0.18 indexer for `BumpArena` on Monad testnet (10143). It serves the C7 leaderboard and match-history API.
 
 ## Run locally
 
@@ -20,8 +20,8 @@ With `DATABASE_URL` unset, Ponder uses PGlite under `indexer/.ponder/`. The API 
 
 ## Environment names
 
-- `PONDER_RPC_URL_46630`
-- `PONDER_WS_URL_46630` (optional)
+- `PONDER_RPC_URL_10143`
+- `PONDER_WS_URL_10143` (optional)
 - `DATABASE_URL` (unset means PGlite)
 - `DATABASE_SCHEMA` (use `bump_v2`; the old ETH-stake schema is abandoned)
 - `ARENA_ADDRESS` (optional override; defaults to `deployments.BumpArena.address` from `@bump/contracts`)
@@ -36,7 +36,7 @@ Amounts are decimal strings of BUMP base units (18 decimals): `stakeAmount`, `po
 
 ## Local chain
 
-Run anvil with `--chain-id 46630`, deploy `MockBUMP` and `BumpArena` (`contracts/script/Deploy.s.sol`), then start the indexer with `PONDER_RPC_URL_46630=http://127.0.0.1:8545`, `ARENA_ADDRESS` and `ARENA_START_BLOCK` set (the overrides replace the testnet deployment).
+Run anvil with `--chain-id 10143`, deploy `MockBUMP` and `BumpArena` (`contracts/script/Deploy.s.sol`), then start the indexer with `PONDER_RPC_URL_10143=http://127.0.0.1:8545`, `ARENA_ADDRESS` and `ARENA_START_BLOCK` set (the overrides replace the testnet deployment).
 
 ## Reset
 

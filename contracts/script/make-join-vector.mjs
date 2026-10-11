@@ -11,7 +11,7 @@ const account = privateKeyToAccount(publicAnvilKey1);
 const domain = {
   name: "BumpArena",
   version: "1",
-  chainId: 46630,
+  chainId: 10143,
   verifyingContract: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
 };
 

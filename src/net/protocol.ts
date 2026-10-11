@@ -163,7 +163,6 @@ export function normalizeEvent(type: string | number, payload: unknown): ServerE
   const event = { ...body, t: kind };
   switch (kind) {
     case 'joinResult':
-    case 'solJoinTx':
     case 'seat':
     case 'bump':
     case 'eliminate':

@@ -2,13 +2,9 @@ import { faucet, type FaucetState } from '../../chain/faucet';
 import { shortAddress } from '../../chain/format';
 import {
   getActiveChain,
-  onActiveChainChange,
-  setActiveChain,
-  type ChainId,
   type ChainWallet,
   type ChainWalletState,
 } from '../../chain/port';
-import { renderChainSelector } from './chainSelector';
 import { button, clear, h, overlayRoot, row, safeIconSrc } from './dom';
 import { claimFaucet, renderFaucetBlock } from './faucetBlock';
 import './online.css';
@@ -16,12 +12,10 @@ import './online.css';
 export class WalletPanel {
   public onContinue?: () => void;
   public onClose?: () => void;
-  public onSelectChain?: (id: ChainId) => void;
   private readonly backdrop: HTMLElement;
   private readonly panel: HTMLElement;
   private visible = false;
-  private wallet: ChainWallet = getActiveChain().wallet;
-  private unsubscribe: () => void;
+  private readonly wallet: ChainWallet = getActiveChain().wallet;
   private state: ChainWalletState;
   private faucetState: FaucetState = faucet.getState();
   private clock: number | null = null;
@@ -32,12 +26,7 @@ export class WalletPanel {
     this.backdrop.appendChild(this.panel);
     overlayRoot().appendChild(this.backdrop);
     this.state = this.wallet.getState();
-    this.unsubscribe = this.watch();
-    onActiveChainChange(() => {
-      this.unsubscribe();
-      this.wallet = getActiveChain().wallet;
-      this.unsubscribe = this.watch();
-    });
+    this.watch();
     faucet.subscribe((state) => {
       this.faucetState = state;
       if (this.visible) this.render();
@@ -52,11 +41,6 @@ export class WalletPanel {
         this.render();
       }
     });
-  }
-
-  private selectChain(id: ChainId): void {
-    if (this.onSelectChain) this.onSelectChain(id);
-    else setActiveChain(id);
   }
 
   public show(): void {
@@ -91,7 +75,6 @@ export class WalletPanel {
     head.append(h('div', 'on-title', 'WALLET'), button('✕', '', () => this.onClose?.()));
     head.lastElementChild?.setAttribute('aria-label', 'Close');
     this.panel.appendChild(head);
-    renderChainSelector(this.panel, (id) => this.selectChain(id));
 
     const arenaReady = getActiveChain().isConfigured();
     if (state.status !== 'connected') {
@@ -112,9 +95,7 @@ export class WalletPanel {
     );
     const wallets = this.wallet.list();
     if (wallets.length === 0) {
-      this.panel.appendChild(h('div', 'on-error', getActiveChain().id === 'solana'
-          ? 'No wallet detected. Install Phantom, Backpack or Solflare.'
-          : 'No wallet detected. Install a browser wallet such as MetaMask.'));
+      this.panel.appendChild(h('div', 'on-error', 'No wallet detected. Install a browser wallet such as MetaMask or Rabby.'));
       return;
     }
     const list = h('div', 'on-wallet-list');

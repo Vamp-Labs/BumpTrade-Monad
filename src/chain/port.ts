@@ -1,9 +1,7 @@
 import type { ChainId } from '@bump/shared';
 import type { NetClient } from '../net/NetClient';
-import { env } from '../config/env';
 import { evmChain } from './evm';
 import { CHAIN_IDS, CHAIN_META } from './meta';
-import { solanaChain } from './solana';
 
 export type { ChainId };
 export { CHAIN_IDS, CHAIN_META };
@@ -53,7 +51,7 @@ export interface ChainWallet {
 
 export interface SessionKeyHandle {
   publicId: string;
-  scheme: 'evm' | 'ed25519';
+  scheme: 'evm';
   signSeat(text: string): Promise<string>;
 }
 
@@ -97,53 +95,8 @@ export interface ClientChain {
   explorerAddress(addr: string): string;
 }
 
-const CHAIN_KEY = 'bump.chain';
-
-function readStored(): ChainId {
-  try {
-    const stored = localStorage.getItem(CHAIN_KEY);
-    if (stored === 'solana' || (stored === 'evm' && env.enableEvm)) return stored;
-  } catch {
-    return env.chainDefault;
-  }
-  return env.chainDefault;
-}
-
-function chainOf(id: ChainId): ClientChain {
-  return id === 'evm' ? evmChain : solanaChain;
-}
-
-let activeId: ChainId = readStored();
-const listeners = new Set<(chain: ClientChain) => void>();
-
-function mark(id: ChainId): void {
-  document.body.dataset.chain = id;
-}
-
 export function getActiveChain(): ClientChain {
-  return chainOf(activeId);
+  return evmChain;
 }
 
-export function setActiveChain(id: ChainId): void {
-  if (id === activeId) return;
-  chainOf(activeId).wallet.disconnect(false);
-  activeId = id;
-  try {
-    localStorage.setItem(CHAIN_KEY, id);
-  } catch {
-    mark(id);
-  }
-  mark(id);
-  const next = chainOf(id);
-  for (const listener of listeners) listener(next);
-  next.wallet.discover();
-}
-
-export function onActiveChainChange(listener: (chain: ClientChain) => void): () => void {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
-}
-
-mark(activeId);
+document.body.dataset.chain = evmChain.id;

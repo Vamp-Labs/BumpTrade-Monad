@@ -1,4 +1,3 @@
-import { getBase58Decoder } from "@solana/kit";
 import { describe, expect, it } from "vitest";
 import { loadConfig } from "../src/config";
 
@@ -49,45 +48,15 @@ describe("loadConfig", () => {
     expect(config.chain).toBe("evm");
   });
 
-  it("rejects an unknown CHAIN and requires the Solana secrets", () => {
+  it("rejects an unknown CHAIN and defaults to the Monad testnet RPC", () => {
     expect(() => loadConfig({ CHAIN: "other" })).toThrow(/CHAIN must be/);
-    expect(() => loadConfig({ CHAIN: "solana" })).toThrow(
-      /SOL_RELAYER_SECRET, SOL_RESULT_SIGNER_SECRET, SOL_MINT_AUTHORITY_SECRET/,
-    );
-  });
-
-  it("loads the Solana config with C8 defaults without echoing secrets", () => {
-    const secret = getBase58Decoder().decode(new Uint8Array(64).fill(7));
-    const mint = "So11111111111111111111111111111111111111112";
     const config = loadConfig({
-      CHAIN: "solana",
-      SOL_RELAYER_SECRET: secret,
-      SOL_RESULT_SIGNER_SECRET: secret,
-      SOL_MINT_AUTHORITY_SECRET: secret,
-      SOL_MINT: mint,
-      SOL_TREASURY: mint,
+      ARENA_ADDRESS: `0x${"11".repeat(20)}`,
+      SIGNER_PRIVATE_KEY: KEY,
+      RELAYER_PRIVATE_KEY: KEY,
     });
-    expect(config.chain).toBe("solana");
-    expect(config.evm).toBeNull();
-    expect(config.solana?.cluster).toBe("devnet");
-    expect(config.solana?.relayerSecret).toHaveLength(64);
-    expect(config.stakeAmount).toBe(100000000000n);
-    expect(config.relayerMinBalance).toBe(50000000n);
-    expect(config.databaseSchema).toBe("bump_sol");
-    let message = "";
-    try {
-      loadConfig({
-        CHAIN: "solana",
-        SOL_RELAYER_SECRET: "bad-secret",
-        SOL_RESULT_SIGNER_SECRET: secret,
-        SOL_MINT_AUTHORITY_SECRET: secret,
-        SOL_MINT: mint,
-        SOL_TREASURY: mint,
-      });
-    } catch (error) {
-      message = String(error);
-    }
-    expect(message).toContain("SOL_RELAYER_SECRET");
-    expect(message).not.toContain("bad-secret");
+    expect(config.chain).toBe("evm");
+    expect(config.evm?.rpcUrl).toBe("https://testnet-rpc.monad.xyz");
+    expect(config.databaseSchema).toBe("bump_monad");
   });
 });

@@ -1,5 +1,5 @@
 import { shortAddress, walletKey } from '../../chain/format';
-import { CHAIN_IDS, CHAIN_META, getActiveChain, type ChainId } from '../../chain/port';
+import { CHAIN_META, getActiveChain, type ChainId } from '../../chain/port';
 import { aliasFor } from './alias';
 import { clear, externalLink, h } from './dom';
 import './online.css';
@@ -42,7 +42,7 @@ function parseRows(value: unknown): LeaderboardRow[] {
 
 async function fetchRows(chain: ChainId, window: LeaderboardWindow, limit: number): Promise<LeaderboardRow[]> {
   const response = await fetch(`${CHAIN_META[chain].leaderboardUrl}/leaderboard?window=${window}&limit=${limit}`);
-  if (!response.ok) throw new Error(`Indexer returned ${response.status}`);
+  if (!response.ok) throw new Error(`Leaderboard returned ${response.status}`);
   return parseRows(await response.json());
 }
 
@@ -131,19 +131,6 @@ export class OnlineLeaderboard {
 
   private segments(): HTMLElement {
     const wrap = h('div', 'on-lb-filters');
-    const chains = h('div', 'on-segs on-chains');
-    for (const id of CHAIN_IDS) {
-      const seg = h('button', `on-seg${this.chain === id ? ' active' : ''}`, CHAIN_META[id].pill);
-      seg.type = 'button';
-      seg.addEventListener('click', () => {
-        if (this.chain === id) return;
-        this.chain = id;
-        this.rows = [];
-        void this.load(true);
-      });
-      chains.appendChild(seg);
-    }
-    if (CHAIN_IDS.length > 1) wrap.appendChild(chains);
     const bar = h('div', 'on-segs');
     const items: Array<[LeaderboardWindow, string]> = [
       ['all', 'ALL TIME'],

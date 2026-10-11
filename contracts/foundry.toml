@@ -17,10 +17,7 @@ depth = 64
 fail_on_revert = false
 
 [rpc_endpoints]
-rh_testnet = "${RH_RPC_URL}"
-
-[etherscan]
-rh_testnet = { key = "empty", chain = 46630, url = "https://explorer.testnet.chain.robinhood.com/api/" }
+monad_testnet = "${MONAD_RPC_URL}"
 
 [lint]
 exclude_lints = ["unsafe-typecast", "asm-keccak256", "block-timestamp", "require-revert-in-loop", "reentrancy-events", "arbitrary-send-erc20"]

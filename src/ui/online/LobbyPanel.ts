@@ -1,6 +1,5 @@
 import { faucet, type FaucetState } from '../../chain/faucet';
-import { getActiveChain, type ChainId } from '../../chain/port';
-import { renderChainSelector } from './chainSelector';
+import { getActiveChain } from '../../chain/port';
 import { button, clear, h, overlayRoot, row } from './dom';
 import { renderFaucetBlock } from './faucetBlock';
 import './online.css';
@@ -58,7 +57,6 @@ export class LobbyPanel {
   public onJoin?: () => void;
   public onLeave?: () => void;
   public onFaucet?: () => void;
-  public onSelectChain?: (id: ChainId) => void;
   private readonly backdrop: HTMLElement;
   private readonly panel: HTMLElement;
   private visible = false;
@@ -105,7 +103,6 @@ export class LobbyPanel {
     const seatPill = h('span', 'on-pill', `${m.seats}/${m.maxSeats} SEATS`);
     head.appendChild(seatPill);
     this.panel.appendChild(head);
-    renderChainSelector(this.panel, (id) => this.onSelectChain?.(id));
 
     if (m.stage === 'connecting') {
       const status = h('div', 'on-status');

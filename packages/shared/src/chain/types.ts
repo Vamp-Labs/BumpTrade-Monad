@@ -1,8 +1,8 @@
-export type ChainId = "solana" | "evm";
+export type ChainId = "evm";
 export type Hex32 = `0x${string}`;
 export type WalletId = string;
 export type TxRef = string;
-export type SeatScheme = "evm" | "ed25519";
+export type SeatScheme = "evm";
 
 export interface ChainResult {
   matchId: Hex32;

@@ -15,35 +15,19 @@ export interface ChainMeta {
   formatAmount(amount: bigint, digits?: number): string;
 }
 
-function solSuffix(): string {
-  return env.sol.cluster === 'mainnet-beta' ? '' : `?cluster=${env.sol.cluster}`;
-}
-
 export const CHAIN_META: Record<ChainId, ChainMeta> = {
-  solana: {
-    id: 'solana',
-    label: 'Solana Devnet',
-    pill: 'Solana Devnet',
-    decimals: 9,
-    gameServerUrl: env.sol.gameServerUrl,
-    gameServerHttpUrl: env.sol.gameServerHttpUrl,
-    leaderboardUrl: env.sol.leaderboardUrl,
-    explorerTx: (tx) => `${env.sol.explorerUrl}/tx/${tx}${solSuffix()}`,
-    explorerAddress: (address) => `${env.sol.explorerUrl}/address/${address}${solSuffix()}`,
-    formatAmount: (amount, digits) => formatTokenAmount(amount, 9, digits),
-  },
   evm: {
     id: 'evm',
-    label: 'Robinhood Chain Testnet',
-    pill: 'Robinhood Chain',
+    label: 'Monad Testnet',
+    pill: 'Monad Testnet',
     decimals: 18,
     gameServerUrl: env.gameServerUrl,
     gameServerHttpUrl: env.gameServerHttpUrl,
-    leaderboardUrl: env.indexerUrl,
+    leaderboardUrl: env.leaderboardUrl,
     explorerTx: (tx) => `${env.explorerUrl}/tx/${tx}`,
     explorerAddress: (address) => `${env.explorerUrl}/address/${address}`,
     formatAmount: (amount, digits) => formatTokenAmount(amount, 18, digits),
   },
 };
 
-export const CHAIN_IDS: readonly ChainId[] = env.enableEvm ? ['solana', 'evm'] : ['solana'];
+export const CHAIN_IDS: readonly ChainId[] = ['evm'];

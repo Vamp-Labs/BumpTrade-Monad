@@ -18,25 +18,6 @@ export interface JoinIntentMessage {
   signature: Hex;
 }
 
-export interface SolJoinPrepareMessage {
-  matchId: Hex32;
-  player: WalletId;
-  sessionKey: string;
-  vehicleId: number;
-}
-
-export interface SolJoinSubmitMessage {
-  matchId: Hex32;
-  signedTx: string;
-}
-
-export type SolJoinTxEvent = {
-  t: "solJoinTx";
-  matchId: Hex32;
-  tx: string;
-  expiresAt: number;
-};
-
 export type JoinResultEvent = {
   t: "joinResult";
   matchId: Hex32;
@@ -148,9 +129,7 @@ export type JoinErrorCode =
   | "JOIN_PENDING"
   | "RATE_LIMITED"
   | "RELAYER_LOW"
-  | "JOIN_FAILED"
-  | "TX_EXPIRED"
-  | "TX_TAMPERED";
+  | "JOIN_FAILED";
 
 export type ErrorEvent = {
   t: "error";
@@ -205,7 +184,6 @@ export type CrateTakenEvent = {
 
 export type ServerEvent =
   | JoinResultEvent
-  | SolJoinTxEvent
   | SeatEvent
   | BumpEvent
   | EliminateEvent
@@ -221,8 +199,6 @@ export type ServerEvent =
 export const EVENT_CHANNEL = "ev";
 export const CLAIM_SEAT_MESSAGE = "claimSeat";
 export const JOIN_INTENT_MESSAGE = "joinIntent";
-export const SOL_JOIN_PREPARE_MESSAGE = "solJoinPrepare";
-export const SOL_JOIN_SUBMIT_MESSAGE = "solJoinSubmit";
 
 export const encodeButtons = (flags: {
   brake?: boolean;

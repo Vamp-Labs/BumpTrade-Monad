@@ -163,7 +163,7 @@ contract BumpArenaJoinTest is Base {
         vm.expectRevert(BumpArena.BadSignature.selector);
         twin.joinWithSig(i, sig);
 
-        vm.chainId(46630);
+        vm.chainId(10143);
         vm.expectRevert(BumpArena.BadSignature.selector);
         arena.joinWithSig(i, sig);
     }

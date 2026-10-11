@@ -3,9 +3,6 @@ import { describeServerCode, faucet } from '../chain/faucet';
 import { shortAddress, walletKey } from '../chain/format';
 import {
   getActiveChain,
-  onActiveChainChange,
-  setActiveChain,
-  type ChainId,
   type ClientChain,
   type MatchSnapshot,
   type SessionKeyHandle,
@@ -95,8 +92,6 @@ export class OnlineController {
     this.walletPanel = new WalletPanel();
     this.chain.wallet.discover();
     this.walletPanel.onClose = () => this.closeWallet();
-    this.walletPanel.onSelectChain = (id) => this.selectChain(id);
-    this.lobbyPanel.onSelectChain = (id) => this.selectChain(id);
     this.walletPanel.onContinue = () => {
       this.walletPanel.hide();
       this.host.exitToVehicleSelect();
@@ -106,7 +101,6 @@ export class OnlineController {
     this.lobbyPanel.onFaucet = () => claimFaucet(this.chain.wallet.getState().address, this.chain.wallet);
     this.resultPanel.onBack = () => this.leave();
     this.watchWallet();
-    onActiveChainChange(() => this.watchWallet());
   }
 
   private get chain(): ClientChain {
@@ -127,14 +121,6 @@ export class OnlineController {
         this.patchLobby({ bumpBalance: state.bumpBalance, ...(low ? { lowBalance: false } : {}) });
       }
     });
-  }
-
-  private selectChain(id: ChainId): void {
-    if (id === this.chain.id) return;
-    const inLobby = this.stage === 'lobby';
-    if (inLobby) this.resetToIdle();
-    setActiveChain(id);
-    if (inLobby) this.openWallet();
   }
 
   public isActive(): boolean {

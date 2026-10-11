@@ -107,9 +107,5 @@ export const migrate = async (db: Db, schema: string): Promise<void> => {
     )`);
     await q(`CREATE INDEX IF NOT EXISTS player_stats_net_idx
       ON "${schema}".player_stats (net_pnl_amount DESC)`);
-    await q(`CREATE TABLE IF NOT EXISTS "${schema}".faucet_claims (
-      wallet text PRIMARY KEY,
-      claimed_at bigint NOT NULL
-    )`);
   });
 };

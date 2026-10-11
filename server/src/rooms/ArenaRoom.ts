@@ -26,8 +26,6 @@ import {
   type SimEvent,
   SPAWN_SLOTS,
   seatMessage,
-  SOL_JOIN_PREPARE_MESSAGE,
-  SOL_JOIN_SUBMIT_MESSAGE,
   secondsToTicks,
   TICK_HZ,
   type Hex32,
@@ -57,9 +55,6 @@ const isHexString = (value: unknown, length?: number): value is Hex =>
   /^0x[0-9a-fA-F]*$/.test(value) &&
   (length === undefined || value.length === length);
 
-const isText = (value: unknown, max: number): value is string =>
-  typeof value === "string" && value.length > 0 && value.length <= max;
-
 const parseClaim = (
   message: unknown,
 ): (ClaimSeatMessage & { scheme: SeatScheme }) | null => {
@@ -73,14 +68,6 @@ const parseClaim = (
       !isHexString(m.wallet, 42) ||
       !isHexString(m.sessionKey, 42) ||
       !isHexString(m.signature)
-    ) {
-      return null;
-    }
-  } else if (scheme === "ed25519") {
-    if (
-      !isText(m.wallet, 64) ||
-      !isText(m.sessionKey, 64) ||
-      !isText(m.signature, 128)
     ) {
       return null;
     }
@@ -209,14 +196,6 @@ export class ArenaRoom extends Room<{ state: MatchState; input: InputFrame }> {
     if (this.ctx.joinRelay) {
       this.onMessage(JOIN_INTENT_MESSAGE, (client, message) => {
         void this.handleJoin(client, message);
-      });
-    }
-    if (this.ctx.solJoin) {
-      this.onMessage(SOL_JOIN_PREPARE_MESSAGE, (client, message) => {
-        void this.handleSolPrepare(client, message);
-      });
-      this.onMessage(SOL_JOIN_SUBMIT_MESSAGE, (client, message) => {
-        void this.handleSolSubmit(client, message);
       });
     }
     this.onMessage(CLAIM_SEAT_MESSAGE, (client, message) => {
@@ -352,55 +331,6 @@ export class ArenaRoom extends Room<{ state: MatchState; input: InputFrame }> {
     }
   }
 
-  private async handleSolPrepare(client: Client, raw: unknown): Promise<void> {
-    const relay = this.ctx.solJoin;
-    if (!relay) return;
-    const startedAt = this.ctx.now();
-    this.ctx.log({ evt: "sol_prepare_received", matchId: this.matchId });
-    if (!(await this.opened)) return;
-    if (!this.joinsOpen(client)) {
-      this.ctx.log({ evt: "sol_prepare_closed", matchId: this.matchId, phase: this.state.phase });
-      return;
-    }
-    const auth = client.auth as { ip?: string } | undefined;
-    this.joinsInFlight += 1;
-    try {
-      const outcome = await relay.prepare(
-        raw,
-        this.matchId,
-        auth?.ip ?? "unknown",
-      );
-      this.ctx.log({
-        evt: "sol_prepare_done",
-        matchId: this.matchId,
-        ok: outcome.ok,
-        code: outcome.ok ? undefined : outcome.code,
-        ms: this.ctx.now() - startedAt,
-      });
-      if (outcome.ok) this.sendEvent(client, outcome.event);
-      else this.sendJoinOutcome(client, outcome);
-    } catch (error) {
-      this.ctx.log({ evt: "join_error", error: String(error) });
-      this.sendError(client, "JOIN_FAILED", "join failed");
-    } finally {
-      this.joinsInFlight -= 1;
-    }
-  }
-
-  private async handleSolSubmit(client: Client, raw: unknown): Promise<void> {
-    const relay = this.ctx.solJoin;
-    if (!relay || !this.joinsOpen(client)) return;
-    this.joinsInFlight += 1;
-    try {
-      this.sendJoinOutcome(client, await relay.submit(raw, this.matchId));
-    } catch (error) {
-      this.ctx.log({ evt: "join_error", error: String(error) });
-      this.sendError(client, "JOIN_FAILED", "join failed");
-    } finally {
-      this.joinsInFlight -= 1;
-    }
-  }
-
   private async handleClaim(client: Client, raw: unknown): Promise<void> {
     const claim = parseClaim(raw);
     if (!claim) {
@@ -415,14 +345,11 @@ export class ArenaRoom extends Room<{ state: MatchState; input: InputFrame }> {
       this.sendError(client, "STALE_AUTH", "claim is too old");
       return;
     }
-    const expectedScheme: SeatScheme =
-      this.ctx.chain.id === "evm" ? "evm" : "ed25519";
-    if (claim.scheme !== expectedScheme) {
+    if (claim.scheme !== "evm") {
       this.sendError(client, "SEAT_REJECTED", "unsupported seat scheme");
       return;
     }
-    const signatureKey =
-      claim.scheme === "evm" ? claim.signature.toLowerCase() : claim.signature;
+    const signatureKey = claim.signature.toLowerCase();
     if (this.usedSignatures.has(signatureKey)) {
       this.sendError(client, "STALE_AUTH", "signature already used");
       return;

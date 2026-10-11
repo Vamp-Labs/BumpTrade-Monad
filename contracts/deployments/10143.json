@@ -1,0 +1,18 @@
+{
+  "chainId": 10143,
+  "MockBUMP": {
+    "address": "0xF094E7e6cB7B9297a88F19E5209C0D6DE3616666",
+    "blockNumber": 70030606,
+    "txHash": "0xa34adea3044d1d8a20a970bc0b8d7670bf1a12c51d7ca2db5afbe7d0906569d2"
+  },
+  "BumpArena": {
+    "address": "0xCB574c46A3579Cf56F398F42A51BFE4C0f1459d9",
+    "blockNumber": 70030609,
+    "txHash": "0x46ea60e7a2246382986f9a1dbf0dbff0ba760a20590892bf25ee05050ad55d53"
+  },
+  "owner": "0xAabb891664b927d831110258a10f1a8C1E91bfFC",
+  "signer": "0x6D815acA5fB56D3036b8F9602BB38fC092791bbf",
+  "operator": "0xAabb891664b927d831110258a10f1a8C1E91bfFC",
+  "treasury": "0xAabb891664b927d831110258a10f1a8C1E91bfFC",
+  "settleWindow": 3600
+}

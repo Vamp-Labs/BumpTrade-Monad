@@ -27,7 +27,7 @@ import {
   webSocket,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { robinhoodTestnet } from "viem/chains";
+import { monadTestnet } from "viem/chains";
 import { PUBLIC_RPC_URL } from "../../config";
 import type {
   ArenaChain,
@@ -36,7 +36,7 @@ import type {
 } from "../ArenaChain";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-const EXPLORER_URL = "https://explorer.testnet.chain.robinhood.com";
+const EXPLORER_URL = "https://testnet.monadvision.com";
 
 export interface EvmArenaChainOptions {
   rpcUrl: string;
@@ -68,7 +68,7 @@ export class EvmArenaChain implements ArenaChain {
 
   constructor(options: EvmArenaChainOptions) {
     this.arena = options.arenaAddress;
-    this.chainId = options.chainId ?? robinhoodTestnet.id;
+    this.chainId = options.chainId ?? monadTestnet.id;
     this.signer = privateKeyToAccount(options.signerPrivateKey);
     this.token = options.tokenAddress ?? null;
     this.receiptTimeoutMs = options.receiptTimeoutMs ?? 15_000;
@@ -88,12 +88,12 @@ export class EvmArenaChain implements ArenaChain {
         : (transports[0] as Transport);
 
     this.publicClient = createPublicClient({
-      chain: robinhoodTestnet,
+      chain: monadTestnet,
       transport,
     });
     this.walletClient = createWalletClient({
       account: this.account,
-      chain: robinhoodTestnet,
+      chain: monadTestnet,
       transport,
     });
   }
@@ -156,7 +156,7 @@ export class EvmArenaChain implements ArenaChain {
   private resetNonce(): void {
     nonceManager.reset({
       address: this.account.address,
-      chainId: robinhoodTestnet.id,
+      chainId: monadTestnet.id,
     });
   }
 

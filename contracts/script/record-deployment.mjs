@@ -4,8 +4,8 @@ import { fileURLToPath } from "node:url";
 import { createPublicClient, getAddress, http, parseAbi } from "viem";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const chainId = Number(process.env.CHAIN_ID ?? 46630);
-const rpcUrl = process.env.RH_RPC_URL ?? "https://rpc.testnet.chain.robinhood.com";
+const chainId = Number(process.env.CHAIN_ID ?? 10143);
+const rpcUrl = process.env.MONAD_RPC_URL ?? "https://testnet-rpc.monad.xyz";
 
 const run = JSON.parse(
   readFileSync(

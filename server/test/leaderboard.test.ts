@@ -6,9 +6,9 @@ import {
 } from "../src/leaderboard";
 import { migrate, openDb } from "../src/leaderboard/db";
 
-const A = "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU";
-const B = "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM";
-const C = "4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T";
+const A = "0x1111111111111111111111111111111111111111";
+const B = "0x3333333333333333333333333333333333333333";
+const C = "0x2222222222222222222222222222222222222222";
 interface Entry {
   wallet: string;
   matches: number;
@@ -27,7 +27,7 @@ const matchId = (n: number) => `0x${n.toString(16).padStart(64, "0")}` as const;
 
 const record = (n: number, settledAt: number): SettlementRecord => ({
   matchId: matchId(n),
-  chain: "solana",
+  chain: "evm",
   stake: 100n,
   startBalance: 1000,
   potAmount: 300n,
@@ -42,9 +42,9 @@ const record = (n: number, settledAt: number): SettlementRecord => ({
 
 const make = (): Promise<Leaderboard> =>
   createLeaderboard({
-    schema: "bump_sol",
-    chain: "solana",
-    decimals: 6,
+    schema: "bump_monad",
+    chain: "evm",
+    decimals: 18,
     corsOrigins: [ORIGIN],
   });
 
@@ -65,8 +65,8 @@ describe("leaderboard", () => {
     const lb = await make();
     await lb.recordSettled(record(1, now()));
     const { body } = await get(lb, "/leaderboard");
-    expect(body.chain).toBe("solana");
-    expect(body.decimals).toBe(6);
+    expect(body.chain).toBe("evm");
+    expect(body.decimals).toBe(18);
     expect(body.window).toBe("all");
     expect(body.rows.map((r: Entry) => r.wallet)).toEqual([A, C, B]);
     expect(body.rows[0]).toMatchObject({
@@ -87,7 +87,7 @@ describe("leaderboard", () => {
       netPnlAmount: "-100",
       claimableHint: null,
     });
-    const empty = await get(lb, "/players/11111111111111111111111111111111");
+    const empty = await get(lb, "/players/0x9999999999999999999999999999999999999999");
     expect(empty.body).toMatchObject({ matches: 0, netPnlAmount: "0" });
 
     const detail = await get(lb, `/matches/${matchId(1)}`);
@@ -162,16 +162,6 @@ describe("leaderboard", () => {
     expect(all.body.rows[0].matches).toBe(2);
   });
 
-  it("tracks faucet cooldown", async () => {
-    const lb = await make();
-    expect(await lb.faucetNextClaimAt(A)).toBe(0);
-    await lb.faucetMarkClaimed(A, 1000);
-    expect(await lb.faucetNextClaimAt(A)).toBe(1000 + 86400);
-    await lb.faucetMarkClaimed(A, 5000);
-    expect(await lb.faucetNextClaimAt(A)).toBe(5000 + 86400);
-    expect(await lb.faucetNextClaimAt(B)).toBe(0);
-  });
-
   it("handles routing, validation and CORS", async () => {
     const lb = await make();
     expect(await lb.ready()).toBe(true);
@@ -181,7 +171,7 @@ describe("leaderboard", () => {
     expect(await lb.handleRequest(new Request("http://x/faucet"))).toBe(null);
     const ready = await get(lb, "/ready");
     expect(ready.res.status).toBe(200);
-    expect(ready.body).toMatchObject({ ready: true, chain: "solana" });
+    expect(ready.body).toMatchObject({ ready: true, chain: "evm" });
     expect((await get(lb, "/players/nope")).res.status).toBe(400);
     expect((await get(lb, "/matches/0x12")).res.status).toBe(400);
     expect((await get(lb, "/matches?wallet=bad")).res.status).toBe(400);
@@ -205,12 +195,12 @@ describe("leaderboard", () => {
 
   it("migrates idempotently and keeps data across a restart", async () => {
     const db = await openDb(undefined);
-    await migrate(db, "bump_sol");
+    await migrate(db, "bump_monad");
     await db.query(
-      "INSERT INTO bump_sol.faucet_claims (wallet, claimed_at) VALUES ('w', 1)",
+      "INSERT INTO bump_monad.matches (id, stake_amount, start_balance, max_players, status, opened_at, pot_amount) VALUES ('0x1', 1, 1, 1, 'open', 1, 1)",
     );
-    await migrate(db, "bump_sol");
-    const rows = await db.query("SELECT * FROM bump_sol.faucet_claims");
+    await migrate(db, "bump_monad");
+    const rows = await db.query("SELECT * FROM bump_monad.matches");
     expect(rows).toHaveLength(1);
     await db.close();
   });
@@ -219,8 +209,8 @@ describe("leaderboard", () => {
     await expect(
       createLeaderboard({
         schema: 'x"; drop',
-        chain: "solana",
-        decimals: 6,
+        chain: "evm",
+        decimals: 18,
         corsOrigins: [],
       }),
     ).rejects.toThrow("DATABASE_SCHEMA");

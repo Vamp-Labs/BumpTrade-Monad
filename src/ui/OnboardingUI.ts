@@ -545,7 +545,7 @@ export class OnboardingUI {
             </button>
           </div>
         </div>
-        <div class="on-footer">BUMP.TRADE is not affiliated with, endorsed by, or officially connected with Robinhood Markets, Inc.</div>
+        <div class="on-footer">Testnet demo. BUMP.TRADE is not affiliated with, endorsed by, or connected with any company or ticker shown.</div>
       </div>
 
       <!-- SCREEN 02: VEHICLE SELECTION -->

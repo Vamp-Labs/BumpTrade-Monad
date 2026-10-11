@@ -1,7 +1,6 @@
 import { join } from "node:path";
 import { createApp } from "./app";
 import { createChain } from "./chain/createChain";
-import { MemoryFaucetCooldown } from "./chain/solana/cooldown";
 import { RefundKeeper } from "./chain/RefundKeeper";
 import { Settler } from "./chain/Settler";
 import { loadConfig } from "./config";
@@ -10,7 +9,6 @@ import { Metrics } from "./metrics";
 import { Faucet } from "./relay/Faucet";
 import { JoinRelay } from "./relay/JoinRelay";
 import { RelayerGuard } from "./relay/RelayerGuard";
-import { SolanaJoinRelay } from "./relay/SolanaJoinRelay";
 
 const log = (line: Record<string, unknown>): void => {
   process.stdout.write(`${JSON.stringify({ ts: Date.now(), ...line })}\n`);
@@ -19,26 +17,14 @@ const log = (line: Record<string, unknown>): void => {
 const main = async (): Promise<void> => {
   const config = loadConfig(process.env);
 
-  const leaderboard =
-    config.chain === "solana"
-      ? await createLeaderboard({
-          databaseUrl: config.databaseUrl ?? undefined,
-          schema: config.databaseSchema,
-          chain: config.chain,
-          decimals: 9,
-          corsOrigins: config.corsOrigins,
-        })
-      : null;
-  const { chain, joinProtocol, solana } = await createChain(
-    config,
-    leaderboard
-      ? {
-          nextClaimAt: (wallet) => leaderboard.faucetNextClaimAt(wallet),
-          markClaimed: (wallet, at) =>
-            leaderboard.faucetMarkClaimed(wallet, at),
-        }
-      : new MemoryFaucetCooldown(),
-  );
+  const leaderboard = await createLeaderboard({
+    databaseUrl: config.databaseUrl ?? undefined,
+    schema: config.databaseSchema,
+    chain: config.chain,
+    decimals: 18,
+    corsOrigins: config.corsOrigins,
+  });
+  const { chain, joinProtocol } = await createChain(config);
   const settler = new Settler({
     chain,
     pendingDir: join(config.replayDir, "pending"),
@@ -76,25 +62,14 @@ const main = async (): Promise<void> => {
 
   const stats = { rooms: 0 };
   const guard = new RelayerGuard(chain, config.relayerMinBalance, Date.now);
-  const joinRelay = joinProtocol
-    ? new JoinRelay({
-        chain,
-        guard,
-        limits: config.limits,
-        protocol: joinProtocol,
-        now: Date.now,
-        log,
-      })
-    : null;
-  const solJoin = solana
-    ? new SolanaJoinRelay({
-        chain: solana,
-        guard,
-        limits: config.limits,
-        now: Date.now,
-        log,
-      })
-    : null;
+  const joinRelay = new JoinRelay({
+    chain,
+    guard,
+    limits: config.limits,
+    protocol: joinProtocol,
+    now: Date.now,
+    log,
+  });
   const faucet = new Faucet({
     chain,
     guard,
@@ -112,8 +87,7 @@ const main = async (): Promise<void> => {
   await keeper.load();
   keeper.start();
   setInterval(() => {
-    joinRelay?.sweep();
-    solJoin?.sweep();
+    joinRelay.sweep();
     faucet.sweep();
   }, 600_000).unref();
   const server = createApp({
@@ -126,7 +100,6 @@ const main = async (): Promise<void> => {
     metrics: new Metrics(),
     guard,
     joinRelay,
-    solJoin,
     leaderboard,
     faucet,
     keeper,

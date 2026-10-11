@@ -65,7 +65,7 @@ class FakeChain implements ArenaChain {
   readonly relayerId = "relayer";
   readonly signerId = "signer";
   readonly arenaAddress: Address = ARENA;
-  readonly evmChainId = 46630;
+  readonly evmChainId = vector.domain.chainId;
   match = view();
   balance = 1000n * ETH;
   relayer = ETH;
@@ -195,7 +195,7 @@ describe("join relay", () => {
     const forged = await privateKeyToAccount(
       "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
     ).signTypedData({
-      domain: buildDomain(ARENA, 46630),
+      domain: buildDomain(ARENA, vector.domain.chainId),
       types: JOIN_INTENT_TYPES,
       primaryType: "JoinIntent",
       message: typed,

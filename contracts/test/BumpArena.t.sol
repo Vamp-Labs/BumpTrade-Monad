@@ -413,7 +413,7 @@ contract BumpArenaTest is Base {
         address[] memory players = _startedMatch(MATCH_ID, 2);
         BumpArena.Result memory r = _result(MATCH_ID, players, _evenBalances(2), _identityRanks(2));
         bytes memory sig = _sign(r);
-        vm.chainId(46630);
+        vm.chainId(10143);
         vm.expectRevert(BumpArena.BadSignature.selector);
         arena.settle(r, sig);
     }

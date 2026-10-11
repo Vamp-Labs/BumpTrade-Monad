@@ -8,7 +8,6 @@ import {
   matchMaker,
 } from "colyseus";
 import { ArenaRoom } from "./rooms/ArenaRoom";
-import { RpcProxy } from "./relay/RpcProxy";
 import { type RoomContext, setRoomContext } from "./rooms/context";
 
 export const clientIp = (headers: Headers): string => {
@@ -32,7 +31,7 @@ export const createApp = (context: RoomContext) => {
         ? origin
         : (allowed[0] ?? ""),
       "Access-Control-Allow-Headers":
-        "Origin, X-Requested-With, Content-Type, Accept, Authorization, solana-client",
+        "Origin, X-Requested-With, Content-Type, Accept, Authorization",
       Vary: "Origin",
     };
   };
@@ -41,13 +40,6 @@ export const createApp = (context: RoomContext) => {
       status,
       headers: { "content-type": "application/json" },
     });
-  const rpcProxy = context.config.solana
-    ? new RpcProxy({
-        url: context.config.solana.rpcUrl,
-        now: context.now,
-        perMinute: 1800,
-      })
-    : null;
   const board = context.leaderboard;
   const boardRoute = (path: string) =>
     createEndpoint(path, { method: "GET" }, async (ctx) => {
@@ -81,24 +73,6 @@ export const createApp = (context: RoomContext) => {
         }
         return { ...context.metrics.snapshot(), relayerBalanceWei };
       }),
-      ...(rpcProxy
-        ? {
-            rpc: createEndpoint(
-              "/rpc",
-              {
-                method: "POST",
-                metadata: { allowedMediaTypes: ["application/json"] },
-              },
-              async (ctx) => {
-                const result = await rpcProxy.handle(
-                  ctx.body,
-                  clientIp(ctx.request?.headers ?? new Headers()),
-                );
-                return json(result.status, result.body);
-              },
-            ),
-          }
-        : {}),
       health: createEndpoint("/health", { method: "GET" }, async () => ({
         ok: true,
         rooms: context.stats.rooms,

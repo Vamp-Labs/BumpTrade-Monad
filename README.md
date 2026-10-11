@@ -1,38 +1,33 @@
 # BUMP.TRADE
 
-Real-time 3D multiplayer bumper-car arena. **Solana devnet is the default chain**; Robinhood Chain testnet stays supported behind the same chain adapter. Bump other cars, knock them out of the arena, last car standing wins. Stakes are a free mock token (`BUMP`) and play is gasless: a player only signs a message, the server relayer pays the gas.
+Real-time 3D multiplayer bumper-car arena on **Monad testnet** (chain id 10143). Bump other cars, knock them out of the arena, last car standing wins the pot. Stakes are a free mock token (`BUMP`) and play is gasless: a player signs one EIP-712 message, the server relayer pays the gas, and the result settles on Monad in one transaction.
 
-> Testnet demo. Not affiliated with, endorsed by, or connected with Robinhood Markets, Inc.
+> Testnet demo. Free test tokens, no real funds. Not affiliated with, endorsed by, or connected with any company or ticker shown.
 
 ## How it works
 
 - **Client** (`src/`): Vite + three.js + Rapier. Offline mode against AI bots, and an online mode with wallet connect, free `BUMP` faucet and one-signature join.
-- **Game server** (`server/`): Colyseus 0.18 over WebSocket. Runs the authoritative Rapier simulation at 60 Hz, streams 30 Hz snapshots, relays gasless joins (Solana: server-built transaction the player signs once; EVM: `joinWithSig`), signs match results, and serves a server-side RPC proxy and the Solana leaderboard.
-- **Solana program** (`solana/`): Anchor `bump_arena` (escrow, gasless join, settle, refund) with a Codama client in `packages/sol-client/`.
-- **EVM contracts** (`contracts/`): Foundry. `BumpArena` escrows `BUMP` stakes, verifies the signed result and pushes payouts; `MockBUMP` is the free ERC20 with a 24 h faucet.
-- **Indexer** (`indexer/`, EVM only): Ponder. Indexes arena events and serves the leaderboard and match history API.
+- **Game server** (`server/`): Colyseus 0.18 over WebSocket. Runs the authoritative Rapier simulation at 60 Hz, streams 30 Hz snapshots, relays gasless joins (`joinWithSig`), signs match results, and serves the leaderboard from Postgres.
+- **Contracts** (`contracts/`): Foundry. `BumpArena` escrows `BUMP` stakes, verifies the signed result and pushes payouts; `MockBUMP` is the free ERC20 with a 24 h faucet.
+- **Indexer** (`indexer/`, optional): Ponder. Indexes arena events and serves a second leaderboard and match history API.
 - **Shared** (`packages/shared/`): protocol schemas, message types and the deterministic game rules used by server and client.
 
-## Deployments
+## Deployment
 
-### Solana devnet (default)
+Monad testnet, chain id 10143, native token MON, explorer https://testnet.monadvision.com.
 
-| Item | Address |
+| Item | Address / URL |
 |---|---|
-| Program `bump_arena` | `3LDXSuMuzP33VZ31sar4ZN1YB13pta7NRuR6aDJmwVgz` |
-| BUMP mint (9 decimals) | `J1t1uz6csJ7V5wMsjtbv8y4KJLs27r63KYDxiBQBADBG` |
-| Treasury | `knS3QhH1v8LRrCru2SpMQbtwbbDtFwQjYRYPYeBtsfS` |
+| `BumpArena` | `0xCB574c46A3579Cf56F398F42A51BFE4C0f1459d9` |
+| `MockBUMP` (free test token) | `0xF094E7e6cB7B9297a88F19E5209C0D6DE3616666` |
+| Live client | https://bump-monad.vercel.app |
+| Game server | https://server-production-54bd.up.railway.app (`/health`, `/ready`, `/metrics.json`) |
 
-Record: `solana/deployments/devnet.json`. Gasless for players: the server relayer pays fees, a player signs one transaction. Leaderboard is written by the server to Postgres. Hosted on Railway (Singapore): client, `server-sol`, Postgres.
+Full record: `contracts/deployments/10143.json`. The client is static (Vercel); the Colyseus game server and relayer run on Railway (Singapore edge). Players never pay gas: the relayer wallet pays all fees.
 
-### Robinhood Chain testnet (chain id 46630, supported, currently not hosted)
+## Verified end to end
 
-| Contract | Address |
-|---|---|
-| `BumpArena` | `0xf00dAfa18463fDf3274bBe93EEB92f8Bf7567803` |
-| `MockBUMP` | `0x45AEF2fD87009Ff78EB29B7ac4346812093c2928` |
-
-Full deployment record: `contracts/deployments/46630.json`. The EVM server and indexer are stopped on Railway; set `VITE_ENABLE_EVM=true` on the client and redeploy `server` and `indexer` to bring it back.
+`tools/e2e/monad-local` runs two real browsers with mock EIP-1193 wallets against the live client, the live server and Monad testnet: connect, free BUMP faucet (on-chain mint), one-signature gasless join (player MON balance unchanged), stake escrowed in the arena, authoritative match, on-chain settle (one transaction, about 130k gas) with payouts, empty vault, leaderboard. Run it with `E2E_CLIENT=<url> E2E_SERVER=<url> node tools/e2e/monad-local/e2e.mjs` and a headless Chrome on port 9444.
 
 ## Repository layout
 
@@ -41,34 +36,24 @@ src/                 3D game client (Vite)
 public/models/       vehicle GLBs (textures embedded)
 packages/shared/     protocol + shared game rules
 server/              Colyseus game server
-indexer/             Ponder indexer + leaderboard API
-solana/              Anchor program, tests, deploy script
-packages/sol-client/ generated Solana TypeScript client
-contracts/           Foundry (EVM) contracts, tests, deploy scripts
-tools/e2e/           two-browser end-to-end harness with mock Wallet Standard wallets
-docs/                PRDs, design notes, research, role handoffs, screenshots
-tools/asset-pipeline Blender and texture generation scripts used to build the GLBs
-Dockerfile.server    Railway image for the game server
-Dockerfile.indexer   Railway image for the indexer
+indexer/             Ponder indexer (optional)
+contracts/           Foundry contracts, tests, deploy scripts
+Dockerfile.server    image for the game server
+Dockerfile.indexer   image for the indexer
 ```
-
-## Verified end to end
-
-A two-browser harness (`tools/e2e/solana-local`) with mock Wallet Standard wallets plays a full match and checks faucet, one-signature gasless join, settle payouts, vault balance and leaderboard. It runs against a local validator, against devnet, and against the live Railway deployment (`E2E_RAILWAY_SERVICE=server-sol`).
 
 ## Getting started
 
 Requirements: Node >= 22.12, pnpm 11, Foundry.
 
 ```bash
-git clone --recurse-submodules https://github.com/Vamp-Labs/BumpTrade.git
-cd BumpTrade
+git clone --recurse-submodules <repo-url>
+cd <repo>
 pnpm install
 cp .env.example .env        # fill in values, never commit .env
 
 pnpm dev                     # client at http://localhost:5173
 pnpm --filter @bump/server start
-pnpm --filter @bump/indexer dev
 ```
 
 Checks:

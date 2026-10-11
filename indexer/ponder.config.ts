@@ -9,22 +9,22 @@ const startBlock = process.env.ARENA_START_BLOCK
   ? Number(process.env.ARENA_START_BLOCK)
   : deployments.BumpArena.blockNumber;
 
-const wsUrl = process.env.PONDER_WS_URL_46630;
+const wsUrl = process.env.PONDER_WS_URL_10143;
 
 export default createConfig({
   chains: {
-    robinhoodTestnet: {
-      id: 46630,
+    monadTestnet: {
+      id: 10143,
       rpc:
-        process.env.PONDER_RPC_URL_46630 ??
-        "https://rpc.testnet.chain.robinhood.com",
+        process.env.PONDER_RPC_URL_10143 ??
+        "https://testnet-rpc.monad.xyz",
       ...(wsUrl ? { ws: wsUrl } : {}),
     },
   },
   contracts: {
     BumpArena: {
       abi: bumpArenaAbi,
-      chain: "robinhoodTestnet",
+      chain: "monadTestnet",
       address: arenaAddress,
       startBlock,
     },

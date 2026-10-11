@@ -2,7 +2,7 @@
   "domain": {
     "name": "BumpArena",
     "version": "1",
-    "chainId": 46630,
+    "chainId": 10143,
     "verifyingContract": "0x5FbDB2315678afecb367f032d93F642f64180aa3"
   },
   "types": {
@@ -37,7 +37,7 @@
     "vehicleId": 3,
     "deadline": "1790003600"
   },
-  "digest": "0x7192129834071e4a0871f89af6f8c8b97b3ebf32b46b9d585bf6676002976185",
+  "digest": "0xd34acb54c3a529b888b1b14b06cd7f840744f87a274cd05c7c6c12cb0fe37b37",
   "signerAddress": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
-  "signature": "0xf5eb65582442ad1ced9125af034d25b1a4d10578c68e1729f9111c4fc60e1d644aefba779dcf3c907e4f69e31bca102ecf96d9ce70434067ef5787e0b054e5cb1b"
+  "signature": "0x8a2578df03b26d640a8b843df7c4a7d0f3a404e52f6fd4b38a4e9555233473c95e86486f4f3e0f34b4978d47e1f3a429bb2a94e9927b8c834b7b9f6dde8f076c1c"
 }

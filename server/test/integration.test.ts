@@ -23,7 +23,7 @@ import {
   http,
 } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { robinhoodTestnet } from "viem/chains";
+import { monadTestnet } from "viem/chains";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../src/app";
 import { type ArenaChain, MatchStatus } from "../src/chain/ArenaChain";
@@ -81,13 +81,13 @@ const waitFor = async <T>(
 };
 
 const publicClient = createPublicClient({
-  chain: robinhoodTestnet,
+  chain: monadTestnet,
   transport: http(RPC),
 });
 const walletFor = (key: Hex) =>
   createWalletClient({
     account: privateKeyToAccount(key),
-    chain: robinhoodTestnet,
+    chain: monadTestnet,
     transport: http(RPC),
   });
 
@@ -107,9 +107,8 @@ const config = (): ServerConfig => ({
     relayerPrivateKey: KEYS.relayer,
     tokenAddress: token,
   },
-  solana: null,
   databaseUrl: null,
-  databaseSchema: "bump_sol",
+  databaseSchema: "bump_monad",
   stakeAmount: 100n * 10n ** 18n,
   relayerMinBalance: 2_000_000_000_000_000n,
   corsOrigins: ["http://localhost:5173"],
@@ -163,7 +162,7 @@ const startApp = async (pendingDir: string, outage: boolean) => {
     tokenAddress: token,
     relayerPrivateKey: KEYS.relayer,
     signerPrivateKey: KEYS.signer,
-    chainId: 46630,
+    chainId: 10143,
     receiptTimeoutMs: 10_000,
   });
   const chain: ArenaChain = outage ? outageOf(real) : real;
@@ -256,7 +255,7 @@ const gaslessJoin = async (player: Player, walletKey: Hex, vehicle: number) => {
   const ethBefore = await publicClient.getBalance({ address: account.address });
   const deadline = BigInt(Math.floor(Date.now() / 1000) + 300);
   const signature = await account.signTypedData({
-    domain: buildDomain(arena, 46630),
+    domain: buildDomain(arena, 10143),
     types: JOIN_INTENT_TYPES,
     primaryType: "JoinIntent",
     message: {
@@ -319,7 +318,7 @@ beforeAll(async () => {
   if (!canRun) return;
   anvil = spawn(
     `${process.env.HOME}/.foundry/bin/anvil`,
-    ["--chain-id", "46630", "--port", String(ANVIL_PORT), "--silent"],
+    ["--chain-id", "10143", "--port", String(ANVIL_PORT), "--silent"],
     {
       stdio: "ignore",
     },
